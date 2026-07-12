@@ -1,6 +1,35 @@
 # AI-Master (Nexus)
 
+[![CI](https://github.com/<your-username>/<repo-name>/actions/workflows/ci.yml/badge.svg)](https://github.com/<your-username>/<repo-name>/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A comprehensive AI/ML framework implementing neural networks, transformers, LLMs, RAG, agents, and multimodal capabilities from scratch - plus a full-stack web app (FastAPI + vanilla HTML/JS "Nexus" UI) that ties them together.
+
+> Replace `<your-username>/<repo-name>` in the badge URL above with your actual GitHub path once pushed.
+
+## Contents
+
+- [Features](#features)
+- [Quickstart](#quickstart)
+- [Installation](#installation)
+- [Running the web app](#running-the-web-app)
+- [Docker](#docker)
+- [Testing](#testing)
+- [API endpoints](#api-endpoints-prefixed-apiv1)
+- [Library usage](#library-usage-outside-the-web-app)
+- [Security notes](#security-notes-before-deploying-anywhere-public)
+- [License](#license)
+
+## Quickstart
+
+```bash
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>
+cp .env.example .env        # add at least one provider key, e.g. GROQ_API_KEY
+pip install -r requirements-web.txt
+python -m app.backend.main
+```
+Open **http://localhost:8000/ui/index.html** and start chatting. See [Docker](#docker) for a one-command alternative.
 
 ## Features
 
@@ -90,7 +119,7 @@ CI (`.github/workflows/ci.yml`) runs this same suite on every push/PR against Py
 
 Speech/image/RAG endpoints lazy-load their models on first request, so a `requirements-web.txt`-only install still boots - those specific endpoints will just return a 503 until the full `requirements.txt` extras are installed.
 
-## Quick Start (library usage, outside the web app)
+## Library usage (outside the web app)
 
 ### Neural Network
 ```python
