@@ -1,0 +1,7 @@
+# Install alongside requirements-web.txt to run the test suite:
+#   pip install -r requirements-web.txt -r requirements-dev.txt
+#   pytest
+
+pytest>=7.4.0
+httpx>=0.27.0   # required by fastapi.testclient.TestClient
+ruff>=0.4.0     # linting, used by the CI workflow

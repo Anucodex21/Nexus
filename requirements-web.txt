@@ -1,0 +1,19 @@
+# Minimal deps to run the Nexus web chat app (app/backend + app/frontend).
+# The full requirements.txt also installs torch/whisper/diffusers/etc for
+# the rest of the AI-Master framework (agents, RAG, speech, image, LLM
+# fine-tuning) - skip that unless you actually need those modules.
+
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.0
+bcrypt==4.0.1
+sqlalchemy>=2.0.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Alternative Streamlit chat UI (interface.py) - optional, not required for
+# the main FastAPI + HTML/JS "Nexus" web app
+streamlit>=1.30.0

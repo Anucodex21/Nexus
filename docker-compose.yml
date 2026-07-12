@@ -1,0 +1,20 @@
+services:
+  nexus:
+    build:
+      context: .
+      args:
+        INSTALL_FULL: "${INSTALL_FULL:-0}"
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////data/aimaster.db
+      CHROMA_PERSIST_DIR: /data/chroma_db
+    volumes:
+      - nexus_data:/data
+      - ./agent_workspace:/app/agent_workspace
+    restart: unless-stopped
+
+volumes:
+  nexus_data:

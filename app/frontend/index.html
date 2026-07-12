@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nexus // Chat</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='6' fill='%232fe0ff'/%3E%3Cellipse cx='24' cy='24' rx='20' ry='8' fill='none' stroke='%238b7bff' stroke-width='2'/%3E%3Cellipse cx='24' cy='24' rx='20' ry='8' fill='none' stroke='%232fe0ff' stroke-width='2' transform='rotate(60 24 24)'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #060a12;
+    --panel: #0b1220;
+    --panel-2: #0f1a2b;
+    --panel-3: #142337;
+    --line: #1c2b40;
+    --cyan: #2fe0ff;
+    --cyan-dim: #12586b;
+    --violet: #8b7bff;
+    --violet-dim: #3a3487;
+    --text: #d7e3ee;
+    --text-dim: #5c7690;
+    --text-faint: #38495c;
+    --ok: #35e0a0;
+    --err: #ff5c72;
+    --amber: #ffb454;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; background: var(--void); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    background-image:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(47,224,255,0.06), transparent 60%),
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    overflow: hidden;
+  }
+  a { color: var(--cyan); }
+  button { font-family: inherit; }
+
+  /* ---------- Nexus logo ---------- */
+  .nexus-logo .orbit { transform-origin: 24px 24px; fill: none; }
+  .nexus-logo .orbit1 { animation: spin 7s linear infinite; }
+  .nexus-logo .orbit2 { animation: spin 10s linear infinite reverse; }
+  .nexus-logo .orbit3 { animation: spin 13s linear infinite; }
+  .nexus-logo .core { animation: pulse 2.4s ease-in-out infinite; transform-origin: 24px 24px; }
+  .nexus-logo .traveler {
+    offset-path: ellipse(20px 8px at 24px 24px);
+    animation: travel 4s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.22); opacity: 0.75; } }
+  @keyframes travel { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+
+  /* ---------- Intro overlay (post-login) ---------- */
+  .intro-overlay {
+    position: fixed; inset: 0; z-index: 999; background: var(--void);
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px;
+    animation: introFadeOut 0.5s ease 1.35s forwards;
+  }
+  .intro-overlay .nexus-logo { width: 92px; height: 92px; animation: introPop 0.7s cubic-bezier(.2,.9,.3,1.3); }
+  .intro-word {
+    display: flex; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 28px;
+    letter-spacing: 0.18em; color: var(--text);
+  }
+  .intro-word span { opacity: 0; transform: translateY(10px); animation: letterIn 0.45s ease forwards; }
+  .intro-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-faint);
+    letter-spacing: 0.12em; opacity: 0; animation: fadeIn 0.5s ease 0.9s forwards;
+  }
+  @keyframes introPop { 0% { transform: scale(0.4); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes letterIn { to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { to { opacity: 1; } }
+  @keyframes introFadeOut { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+
+  /* ---------- Auth screen ---------- */
+  .auth-shell {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .auth-card {
+    width: 100%; max-width: 380px; border: 1px solid var(--line); border-radius: 10px;
+    background: linear-gradient(180deg, var(--panel), var(--void) 60%);
+    padding: 30px 28px; position: relative;
+    animation: cardIn 0.5s cubic-bezier(.2,.8,.3,1.1);
+    box-shadow: 0 0 0 1px rgba(47,224,255,0.03), 0 20px 60px -20px rgba(47,224,255,0.12);
+  }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .auth-brand {
+    display: flex; align-items: center; gap: 10px; font-family: 'Chakra Petch', sans-serif;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.12em; margin-bottom: 24px;
+  }
+  .auth-brand .nexus-logo { width: 30px; height: 30px; }
+  .auth-tabs { display: flex; gap: 6px; margin-bottom: 18px; }
+  .auth-tab {
+    flex: 1; text-align: center; padding: 8px; font-family: 'Chakra Petch', sans-serif; font-size: 11.5px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); border: 1px solid var(--line);
+    border-radius: 6px; cursor: pointer; background: transparent; transition: all 0.15s ease;
+  }
+  .auth-tab.active { color: var(--void); background: var(--cyan); border-color: var(--cyan); }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 5px; letter-spacing: 0.04em; }
+  .field input {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 10px 12px; color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif; outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .field input:focus { border-color: var(--cyan-dim); box-shadow: 0 0 0 3px rgba(47,224,255,0.08); }
+  .auth-submit {
+    width: 100%; background: var(--cyan); color: #04141a; border: none; border-radius: 6px; padding: 11px;
+    font-family: 'Chakra Petch', sans-serif; font-weight: 600; font-size: 12.5px; letter-spacing: 0.06em;
+    text-transform: uppercase; cursor: pointer; margin-top: 6px; transition: opacity 0.15s ease;
+  }
+  .auth-submit:hover { opacity: 0.88; }
+  .auth-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+  .auth-error { color: var(--err); font-size: 12.5px; margin-top: 10px; min-height: 1em; line-height: 1.4; }
+
+  /* ---------- App shell ---------- */
+  .app { display: none; height: 100vh; opacity: 0; }
+  .app.visible { display: flex; animation: shellIn 0.5s ease forwards; }
+  @keyframes shellIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
+
+  .sidebar {
+    width: 264px; flex-shrink: 0; border-right: 1px solid var(--line); background: var(--panel);
+    display: flex; flex-direction: column;
+  }
+  .sidebar-head { padding: 16px; border-bottom: 1px solid var(--line); }
+  .sidebar-brand {
+    display: flex; align-items: center; gap: 9px; font-family: 'Chakra Petch', sans-serif;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 14px;
+  }
+  .sidebar-brand .nexus-logo { width: 22px; height: 22px; }
+  .new-chat-btn {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+    border-radius: 6px; padding: 9px; font-family: 'Chakra Petch', sans-serif; font-size: 12px;
+    letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .new-chat-btn:hover { border-color: var(--cyan-dim); }
+
+  .conv-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .conv-list::-webkit-scrollbar { width: 6px; }
+  .conv-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  .conv-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    padding: 9px 10px; border-radius: 6px; font-size: 13px; color: var(--text-dim); cursor: pointer;
+    margin-bottom: 2px; transition: background 0.12s ease;
+  }
+  .conv-item-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conv-item:hover { background: var(--panel-2); color: var(--text); }
+  .conv-item.active { background: var(--panel-2); color: var(--cyan); border: 1px solid var(--cyan-dim); }
+  .conv-empty { color: var(--text-faint); font-size: 12px; padding: 10px; text-align: center; }
+
+  .sidebar-foot { border-top: 1px solid var(--line); padding: 10px; position: relative; }
+  .sidebar-foot a.agent-link {
+    display: block; font-size: 11.5px; color: var(--text-dim); text-decoration: none; font-family: 'Chakra Petch', sans-serif;
+    letter-spacing: 0.04em; padding: 6px 6px 10px;
+  }
+  .sidebar-foot a.agent-link:hover { color: var(--cyan); }
+
+  .profile-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer;
+    border: 1px solid transparent; transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .profile-row:hover { background: var(--panel-2); border-color: var(--line); }
+  .profile-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--cyan), var(--violet)); color: #04141a;
+    display: flex; align-items: center; justify-content: center; font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700; font-size: 12.5px;
+  }
+  .profile-meta { flex: 1; min-width: 0; }
+  .profile-name { font-size: 12.5px; color: var(--text); font-family: 'Chakra Petch', sans-serif; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .profile-sub { font-size: 10px; color: var(--text-faint); letter-spacing: 0.06em; text-transform: uppercase; }
+  .profile-chevron { color: var(--text-faint); font-size: 10px; transition: transform 0.15s ease; }
+  .profile-row.open .profile-chevron { transform: rotate(180deg); }
+
+  .profile-menu {
+    position: absolute; bottom: calc(100% + 6px); left: 10px; right: 10px; background: var(--panel-3);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px; display: none; flex-direction: column;
+    box-shadow: 0 10px 30px -8px rgba(0,0,0,0.5); z-index: 20;
+  }
+  .profile-menu.open { display: flex; animation: menuIn 0.15s ease; }
+  @keyframes menuIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .profile-menu button {
+    background: transparent; border: none; color: var(--text-dim); text-align: left; padding: 8px 10px;
+    border-radius: 6px; font-size: 12.5px; cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .profile-menu button:hover { background: var(--panel-2); color: var(--text); }
+  .profile-menu button.danger:hover { color: var(--err); }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 24px;
+    border-bottom: 1px solid var(--line); gap: 12px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  #convTitle {
+    font-family: 'Chakra Petch', sans-serif; font-size: 13.5px; letter-spacing: 0.04em; color: var(--text);
+    outline: none; border-radius: 4px; padding: 3px 6px; margin: -3px -6px; max-width: 46vw;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: text;
+  }
+  #convTitle:hover, #convTitle:focus { background: var(--panel-2); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel-2);
+    color: var(--text-dim); display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: all 0.15s ease; position: relative;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--cyan-dim); }
+  .icon-btn svg { width: 15px; height: 15px; }
+  .share-btn { display: flex; align-items: center; gap: 7px; width: auto; padding: 0 12px; font-size: 11.5px;
+    font-family: 'Chakra Petch', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .status {
+    display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 0.08em;
+    color: var(--text-dim); text-transform: uppercase; font-family: 'Chakra Petch', sans-serif;
+  }
+  .status .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
+  .status.busy .pulse { background: var(--amber); box-shadow: 0 0 6px var(--amber); animation: blink 1s infinite ease-in-out; }
+  .status.ready .pulse { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+  .status.error .pulse { background: var(--err); box-shadow: 0 0 6px var(--err); }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .thread { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+  .thread::-webkit-scrollbar { width: 8px; }
+  .thread::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .empty {
+    margin: auto; text-align: center; color: var(--text-faint); font-family: 'Chakra Petch', sans-serif;
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .empty .nexus-logo { width: 44px; height: 44px; margin: 0 auto 14px; }
+  .empty .big { font-size: 13px; color: var(--text-dim); margin-bottom: 6px; display: block; }
+
+  .bubble-row { display: flex; animation: bubbleIn 0.28s ease; }
+  @keyframes bubbleIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .bubble-row.user { justify-content: flex-end; }
+  .bubble-row.assistant { justify-content: flex-start; }
+  .bubble {
+    max-width: 74%; padding: 11px 15px; border-radius: 10px; font-size: 14.5px; line-height: 1.55;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .bubble-row.user .bubble {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px 10px 2px 10px;
+  }
+  .bubble-row.assistant .bubble {
+    background: rgba(47,224,255,0.04); border: 1px solid var(--cyan-dim); border-radius: 10px 10px 10px 2px;
+    color: var(--text);
+  }
+  .bubble-meta {
+    font-size: 10px; color: var(--text-faint); margin-top: 5px; letter-spacing: 0.04em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .bubble-row.user .bubble-meta { text-align: right; }
+
+  .thinking-line {
+    display: flex; align-items: center; gap: 10px; color: var(--text-faint); font-size: 12px;
+    font-family: 'Chakra Petch', sans-serif; letter-spacing: 0.06em;
+  }
+  .thinking-line .nexus-logo { width: 20px; height: 20px; }
+  .thinking-dots span { animation: dotFade 1.2s infinite; opacity: 0.2; }
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotFade { 0%,100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+  /* ---------- Composer ---------- */
+  .composer { padding: 14px 24px 20px; border-top: 1px solid var(--line); }
+  .attachment-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .attachment-chip {
+    display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 7px; padding: 6px 10px; font-size: 12px; color: var(--text-dim); max-width: 240px;
+  }
+  .attachment-chip .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .attachment-chip button { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 13px; line-height: 1; padding: 0; }
+  .attachment-chip button:hover { color: var(--err); }
+  .attachment-chip.uploading { color: var(--text-faint); }
+
+  .composer-shell {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px 8px 10px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .composer-shell:focus-within { border-color: var(--cyan-dim); box-shadow: 0 0 0 3px rgba(47,224,255,0.08); }
+  .composer-shell textarea {
+    width: 100%; resize: none; background: transparent; border: none;
+    padding: 6px 4px; color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif; outline: none;
+    max-height: 140px; display: block;
+  }
+  .composer-shell textarea::placeholder { color: var(--text-faint); }
+  .composer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+  .composer-toolbar-left { display: flex; align-items: center; gap: 6px; }
+  .composer-toolbar-right { display: flex; align-items: center; gap: 8px; }
+
+  .model-btn {
+    display: flex; align-items: center; gap: 6px; background: var(--panel-3); border: 1px solid var(--line);
+    color: var(--text-dim); border-radius: 999px; padding: 6px 11px 6px 10px; font-size: 11.5px;
+    font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .model-btn:hover { border-color: var(--cyan-dim); color: var(--text); }
+  .model-btn .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex-shrink: 0; }
+  .model-btn.offline .dot { background: var(--err); }
+  .model-btn svg { width: 10px; height: 10px; opacity: 0.6; }
+
+  .model-dropdown-wrap { position: relative; }
+  .model-dropdown {
+    position: absolute; bottom: calc(100% + 8px); left: 0; min-width: 220px; max-height: 260px; overflow-y: auto;
+    background: var(--panel-3); border: 1px solid var(--line); border-radius: 8px; padding: 6px; display: none;
+    box-shadow: 0 10px 30px -8px rgba(0,0,0,0.5); z-index: 30;
+  }
+  .model-dropdown.open { display: block; animation: menuIn 0.15s ease; }
+  .model-option {
+    padding: 8px 10px; border-radius: 6px; font-size: 12.5px; color: var(--text-dim); cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 8px;
+  }
+  .model-option:hover { background: var(--panel-2); color: var(--text); }
+  .model-option.selected { color: var(--cyan); }
+  .model-option.selected::after { content: '✓'; margin-left: auto; }
+
+  .toolbar-icon-btn {
+    width: 30px; height: 30px; border-radius: 8px; border: 1px solid transparent; background: transparent;
+    color: var(--text-dim); display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .toolbar-icon-btn:hover { background: var(--panel-3); color: var(--text); border-color: var(--line); }
+  .toolbar-icon-btn svg { width: 16px; height: 16px; }
+  .toolbar-icon-btn.mic.listening { color: var(--err); border-color: var(--err); background: rgba(255,92,114,0.08); animation: micPulse 1.2s infinite ease-in-out; }
+  @keyframes micPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,92,114,0.35); } 50% { box-shadow: 0 0 0 6px rgba(255,92,114,0); } }
+
+  .send-btn {
+    background: var(--cyan); color: #04141a; border: none; border-radius: 8px; width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.15s ease;
+  }
+  .send-btn:hover { opacity: 0.88; }
+  .send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .send-btn svg { width: 15px; height: 15px; }
+
+  /* ---------- Toasts ---------- */
+  .toast-container { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .toast {
+    background: var(--panel-3); border: 1px solid var(--line); color: var(--text); font-size: 12.5px;
+    padding: 9px 16px; border-radius: 999px; box-shadow: 0 10px 30px -8px rgba(0,0,0,0.6);
+    animation: toastIn 0.2s ease, toastOut 0.25s ease 2.2s forwards; font-family: 'Chakra Petch', sans-serif;
+    letter-spacing: 0.02em;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(6px); } }
+</style>
+</head>
+<body>
+
+<!-- ===== Post-login intro ===== -->
+<div class="intro-overlay" id="introOverlay" style="display:none;">
+  <div class="nexus-logo" id="introLogo"></div>
+  <div class="intro-word" id="introWord"></div>
+  <div class="intro-sub">INITIALIZING SESSION</div>
+</div>
+
+<!-- ===== Auth screen ===== -->
+<div class="auth-shell" id="authShell">
+  <div class="auth-card">
+    <div class="auth-brand"><span class="nexus-logo" id="authLogo"></span> NEXUS</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin">Log In</div>
+      <div class="auth-tab" id="tabRegister">Register</div>
+    </div>
+    <form id="authForm">
+      <div class="field" id="fieldEmail" style="display:none;">
+        <label>Email</label>
+        <input type="email" id="emailInput" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="usernameInput" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="passwordInput" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="auth-submit" id="authSubmitBtn">Log In</button>
+      <div class="auth-error" id="authError"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Main app ===== -->
+<div class="app" id="app">
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-brand"><span class="nexus-logo" id="sideLogo"></span> NEXUS</div>
+      <button class="new-chat-btn" id="newChatBtn">+ New chat</button>
+    </div>
+    <div class="conv-list" id="convList">
+      <div class="conv-empty">no conversations yet</div>
+    </div>
+    <div class="sidebar-foot">
+      <a class="agent-link" href="./agent.html">&rarr; Coding Agent</a>
+      <a class="agent-link" href="./studio.html">&rarr; Studio (RAG / Speech / Image)</a>
+      <div class="profile-row" id="profileRow">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div class="profile-meta">
+          <div class="profile-name" id="profileName">Guest</div>
+          <div class="profile-sub" id="profileStatusText">connecting</div>
+        </div>
+        <div class="profile-chevron">▲</div>
+      </div>
+      <div class="profile-menu" id="profileMenu">
+        <button id="menuLogout" class="danger">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div id="convTitle" contenteditable="true" spellcheck="false" title="Click to rename">new chat</div>
+      </div>
+      <div class="topbar-right">
+        <div class="status" id="status"><span class="pulse"></span><span id="statusText">connecting</span></div>
+        <button class="icon-btn share-btn" id="shareBtn" title="Share conversation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
+          <span>Share</span>
+        </button>
+      </div>
+    </div>
+    <div class="thread" id="thread">
+      <div class="empty" id="emptyState">
+        <div class="nexus-logo" id="emptyLogo"></div>
+        <span class="big">no messages yet</span>
+        say something below to start
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="attachment-row" id="attachmentRow"></div>
+      <div class="composer-shell">
+        <textarea id="msgInput" rows="1" placeholder="Message Nexus..."></textarea>
+        <div class="composer-toolbar">
+          <div class="composer-toolbar-left">
+            <div class="model-dropdown-wrap">
+              <button class="model-btn" id="modelBtn" type="button">
+                <span class="dot" id="modelDot"></span>
+                <span id="modelBtnLabel">auto</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="model-dropdown" id="modelDropdown"></div>
+            </div>
+            <button class="toolbar-icon-btn" id="attachBtn" type="button" title="Attach a file">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95L9.41 17.41a1.5 1.5 0 0 1-2.12-2.12l8.49-8.49"/></svg>
+            </button>
+            <input type="file" id="fileInput" style="display:none" />
+          </div>
+          <div class="composer-toolbar-right">
+            <button class="toolbar-icon-btn mic" id="micBtn" type="button" title="Voice input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button class="send-btn" id="sendBtn" title="Send">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API_BASE = window.location.origin;
+let token = localStorage.getItem('nexus_token') || localStorage.getItem('aimaster_token') || null;
+let username = localStorage.getItem('nexus_username') || '';
+let currentConversationId = null;
+let currentModel = '';
+let authMode = 'login';
+let pendingAttachment = null; // { filename, content, truncated }
+let recognition = null;
+let listening = false;
+
+// ---------------- Nexus logo builder ----------------
+let logoCounter = 0;
+function nexusLogoSVG(withTraveler) {
+  const uid = 'nx' + (logoCounter++);
+  return `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <defs>
+      <linearGradient id="core-${uid}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="var(--cyan)"/><stop offset="1" stop-color="var(--violet)"/>
+      </linearGradient>
+      <linearGradient id="ring-${uid}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="var(--cyan)" stop-opacity="0.9"/><stop offset="1" stop-color="var(--violet)" stop-opacity="0.35"/>
+      </linearGradient>
+    </defs>
+    <ellipse class="orbit orbit1" cx="24" cy="24" rx="20" ry="8" stroke="url(#ring-${uid})" stroke-width="1.4"/>
+    <ellipse class="orbit orbit2" cx="24" cy="24" rx="20" ry="8" stroke="url(#ring-${uid})" stroke-width="1.4" transform="rotate(60 24 24)"/>
+    <ellipse class="orbit orbit3" cx="24" cy="24" rx="20" ry="8" stroke="url(#ring-${uid})" stroke-width="1.4" transform="rotate(120 24 24)"/>
+    <circle class="core" cx="24" cy="24" r="4.4" fill="url(#core-${uid})"/>
+    ${withTraveler ? `<circle class="traveler" r="2" fill="var(--cyan)"/>` : ``}
+  </svg>`;
+}
+function mountLogo(elId, withTraveler) {
+  const el = document.getElementById(elId);
+  if (el) el.innerHTML = nexusLogoSVG(withTraveler);
+}
+['authLogo','sideLogo','emptyLogo'].forEach(id => mountLogo(id, true));
+mountLogo('introLogo', true);
+
+// ---------------- Toasts ----------------
+function toast(msg) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
+// ---------------- Intro animation ----------------
+function playIntro() {
+  const overlay = document.getElementById('introOverlay');
+  const word = document.getElementById('introWord');
+  word.innerHTML = 'NEXUS'.split('').map((ch, i) =>
+    `<span style="animation-delay:${0.35 + i * 0.05}s">${ch}</span>`).join('');
+  overlay.style.display = 'flex';
+  overlay.style.animation = 'none';
+  void overlay.offsetWidth;
+  overlay.style.animation = 'introFadeOut 0.5s ease 1.35s forwards';
+  setTimeout(() => { overlay.style.display = 'none'; }, 1900);
+}
+
+// ---------------- Auth screen wiring ----------------
+const authShell = document.getElementById('authShell');
+const appEl = document.getElementById('app');
+const tabLogin = document.getElementById('tabLogin');
+const tabRegister = document.getElementById('tabRegister');
+const fieldEmail = document.getElementById('fieldEmail');
+const authForm = document.getElementById('authForm');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const authError = document.getElementById('authError');
+
+function setAuthMode(mode) {
+  authMode = mode;
+  tabLogin.classList.toggle('active', mode === 'login');
+  tabRegister.classList.toggle('active', mode === 'register');
+  fieldEmail.style.display = mode === 'register' ? 'block' : 'none';
+  authSubmitBtn.textContent = mode === 'register' ? 'Create account' : 'Log In';
+  authError.textContent = '';
+}
+tabLogin.addEventListener('click', () => setAuthMode('login'));
+tabRegister.addEventListener('click', () => setAuthMode('register'));
+
+authForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  authError.textContent = '';
+  authSubmitBtn.disabled = true;
+  const enteredUsername = document.getElementById('usernameInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const email = document.getElementById('emailInput').value.trim();
+  try {
+    const path = authMode === 'register' ? '/api/v1/auth/register' : '/api/v1/auth/login';
+    const body = authMode === 'register' ? { username: enteredUsername, password, email } : { username: enteredUsername, password };
+    const res = await fetch(API_BASE + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Authentication failed');
+    token = data.access_token;
+    username = enteredUsername;
+    localStorage.setItem('nexus_token', token);
+    localStorage.setItem('nexus_username', username);
+    enterApp(true);
+  } catch (err) {
+    authError.textContent = err.message;
+  } finally {
+    authSubmitBtn.disabled = false;
+  }
+});
+
+function forceLogout() {
+  token = null;
+  localStorage.removeItem('nexus_token');
+  localStorage.removeItem('aimaster_token');
+  appEl.classList.remove('visible');
+  authShell.style.display = 'flex';
+}
+
+document.getElementById('menuLogout').addEventListener('click', () => {
+  closeProfileMenu();
+  forceLogout();
+});
+
+function authHeaders() {
+  return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+
+// ---------------- Profile ----------------
+const profileRow = document.getElementById('profileRow');
+const profileMenu = document.getElementById('profileMenu');
+function renderProfile() {
+  const name = username || 'Guest';
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileAvatar').textContent = name.slice(0, 2).toUpperCase();
+}
+function toggleProfileMenu() {
+  profileMenu.classList.toggle('open');
+  profileRow.classList.toggle('open');
+}
+function closeProfileMenu() {
+  profileMenu.classList.remove('open');
+  profileRow.classList.remove('open');
+}
+profileRow.addEventListener('click', (e) => { e.stopPropagation(); toggleProfileMenu(); });
+document.addEventListener('click', () => closeProfileMenu());
+
+// ---------------- App wiring ----------------
+const thread = document.getElementById('thread');
+const msgInput = document.getElementById('msgInput');
+const sendBtn = document.getElementById('sendBtn');
+const statusEl = document.getElementById('status');
+const statusText = document.getElementById('statusText');
+const profileStatusText = document.getElementById('profileStatusText');
+const convList = document.getElementById('convList');
+const convTitle = document.getElementById('convTitle');
+const newChatBtn = document.getElementById('newChatBtn');
+const modelBtn = document.getElementById('modelBtn');
+const modelBtnLabel = document.getElementById('modelBtnLabel');
+const modelDot = document.getElementById('modelDot');
+const modelDropdown = document.getElementById('modelDropdown');
+
+function setStatus(mode, label) {
+  statusEl.className = 'status ' + mode;
+  statusText.textContent = label;
+  profileStatusText.textContent = label;
+}
+
+async function enterApp(fresh) {
+  authShell.style.display = 'none';
+  appEl.classList.add('visible');
+  renderProfile();
+  if (fresh) playIntro();
+  await Promise.all([loadModels(), loadConversations()]);
+  const params = new URLSearchParams(window.location.search);
+  const sharedConv = params.get('c');
+  if (sharedConv) {
+    openConversation(sharedConv, null);
+  } else {
+    startNewChat();
+  }
+}
+
+async function apiGet(path) {
+  const res = await fetch(API_BASE + path, { headers: authHeaders() });
+  if (res.status === 401) { forceLogout(); throw new Error('Session expired'); }
+  if (!res.ok) throw new Error('Request failed: ' + res.status);
+  return res.json();
+}
+
+// ---------------- Model picker ----------------
+let availableModels = [];
+function buildModelDropdown() {
+  modelDropdown.innerHTML = '';
+  const autoOpt = document.createElement('div');
+  autoOpt.className = 'model-option' + (currentModel === '' ? ' selected' : '');
+  autoOpt.textContent = 'auto (fallback chain)';
+  autoOpt.addEventListener('click', () => selectModel(''));
+  modelDropdown.appendChild(autoOpt);
+  availableModels.forEach(name => {
+    const opt = document.createElement('div');
+    opt.className = 'model-option' + (currentModel === name ? ' selected' : '');
+    opt.textContent = name;
+    opt.addEventListener('click', () => selectModel(name));
+    modelDropdown.appendChild(opt);
+  });
+}
+function selectModel(name) {
+  currentModel = name;
+  modelBtnLabel.textContent = name || 'auto';
+  modelDropdown.classList.remove('open');
+  buildModelDropdown();
+}
+modelBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  modelDropdown.classList.toggle('open');
+});
+document.addEventListener('click', () => modelDropdown.classList.remove('open'));
+
+async function loadModels() {
+  try {
+    const data = await apiGet('/api/v1/models');
+    availableModels = data.models || [];
+    buildModelDropdown();
+    if (availableModels.length) {
+      modelDot.classList.remove('offline');
+      setStatus('ready', availableModels.length + ' provider(s) online');
+    } else {
+      modelDot.classList.add('offline');
+      setStatus('error', 'no provider configured');
+    }
+  } catch (e) {
+    modelDot.classList.add('offline');
+    setStatus('error', 'backend unreachable');
+  }
+}
+
+// ---------------- Conversations & titles ----------------
+function titleOverrides() {
+  try { return JSON.parse(localStorage.getItem('nexus_titles') || '{}'); } catch (e) { return {}; }
+}
+function setTitleOverride(id, title) {
+  const map = titleOverrides();
+  map[id] = title;
+  localStorage.setItem('nexus_titles', JSON.stringify(map));
+}
+function resolveTitle(id, fallback) {
+  const map = titleOverrides();
+  return map[id] || fallback || '(untitled)';
+}
+
+let lastConversations = [];
+async function loadConversations() {
+  try {
+    const data = await apiGet('/api/v1/conversations');
+    lastConversations = data.conversations || [];
+    renderConvList(lastConversations);
+  } catch (e) { /* status already reflects backend issues */ }
+}
+
+function renderConvList(conversations) {
+  convList.innerHTML = '';
+  if (!conversations.length) {
+    convList.innerHTML = '<div class="conv-empty">no conversations yet</div>';
+    return;
+  }
+  conversations.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'conv-item' + (c.conversation_id === currentConversationId ? ' active' : '');
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'conv-item-title';
+    titleSpan.textContent = resolveTitle(c.conversation_id, c.title);
+    item.appendChild(titleSpan);
+    item.addEventListener('click', () => openConversation(c.conversation_id, resolveTitle(c.conversation_id, c.title)));
+    convList.appendChild(item);
+  });
+}
+
+function clearThread() {
+  thread.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'empty';
+  el.id = 'emptyState';
+  el.innerHTML = '<div class="nexus-logo" id="emptyLogo"></div><span class="big">no messages yet</span>say something below to start';
+  thread.appendChild(el);
+  mountLogo('emptyLogo', true);
+}
+
+function startNewChat() {
+  currentConversationId = null;
+  convTitle.textContent = 'new chat';
+  clearAttachment();
+  clearThread();
+  loadConversations();
+  msgInput.focus();
+}
+newChatBtn.addEventListener('click', startNewChat);
+
+async function openConversation(id, title) {
+  currentConversationId = id;
+  convTitle.textContent = resolveTitle(id, title);
+  try {
+    const data = await apiGet('/api/v1/conversations/' + encodeURIComponent(id));
+    clearThread();
+    (data.messages || []).forEach(turn => {
+      addBubble('user', turn.message, null);
+      addBubble('assistant', turn.response, turn.model_used);
+    });
+  } catch (e) {
+    setStatus('error', 'could not load conversation');
+  }
+  await loadConversations();
+}
+
+// Rename via editable top title
+convTitle.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); convTitle.blur(); }
+});
+convTitle.addEventListener('blur', () => {
+  const newTitle = convTitle.textContent.trim() || 'new chat';
+  convTitle.textContent = newTitle;
+  if (currentConversationId) {
+    setTitleOverride(currentConversationId, newTitle);
+    renderConvList(lastConversations);
+  }
+});
+
+function addBubble(role, text, meta) {
+  const emptyNow = document.getElementById('emptyState');
+  if (emptyNow) emptyNow.remove();
+  const row = document.createElement('div');
+  row.className = 'bubble-row ' + role;
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  row.appendChild(bubble);
+  if (meta) {
+    const metaEl = document.createElement('div');
+    metaEl.className = 'bubble-meta';
+    metaEl.textContent = meta;
+    const wrap = document.createElement('div');
+    wrap.appendChild(bubble);
+    wrap.appendChild(metaEl);
+    row.innerHTML = '';
+    row.appendChild(wrap);
+  }
+  thread.appendChild(row);
+  thread.scrollTop = thread.scrollHeight;
+  return row;
+}
+
+function showThinking() {
+  const row = document.createElement('div');
+  row.className = 'bubble-row assistant';
+  row.id = 'thinkingRow';
+  row.innerHTML = '<div class="thinking-line"><span class="nexus-logo" id="thinkingLogo"></span> Nexus is thinking<span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>';
+  thread.appendChild(row);
+  mountLogo('thinkingLogo', true);
+  thread.scrollTop = thread.scrollHeight;
+}
+function removeThinking() {
+  const el = document.getElementById('thinkingRow');
+  if (el) el.remove();
+}
+
+// Creates an empty assistant bubble to stream text into, returns the
+// element whose textContent should be updated as chunks arrive.
+function startStreamingBubble() {
+  const emptyNow = document.getElementById('emptyState');
+  if (emptyNow) emptyNow.remove();
+  const row = document.createElement('div');
+  row.className = 'bubble-row assistant';
+  const wrap = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = '';
+  const metaEl = document.createElement('div');
+  metaEl.className = 'bubble-meta';
+  metaEl.textContent = 'streaming…';
+  wrap.appendChild(bubble);
+  wrap.appendChild(metaEl);
+  row.appendChild(wrap);
+  thread.appendChild(row);
+  thread.scrollTop = thread.scrollHeight;
+  return { bubble, metaEl };
+}
+
+// ---------------- File attachment ----------------
+const attachBtn = document.getElementById('attachBtn');
+const fileInput = document.getElementById('fileInput');
+const attachmentRow = document.getElementById('attachmentRow');
+
+attachBtn.addEventListener('click', () => fileInput.click());
+
+function clearAttachment() {
+  pendingAttachment = null;
+  attachmentRow.innerHTML = '';
+  fileInput.value = '';
+}
+
+function renderAttachmentChip(name, status) {
+  attachmentRow.innerHTML = '';
+  const chip = document.createElement('div');
+  chip.className = 'attachment-chip' + (status === 'uploading' ? ' uploading' : '');
+  const nameEl = document.createElement('span');
+  nameEl.className = 'name';
+  nameEl.textContent = status === 'uploading' ? 'Uploading ' + name + '…' : name;
+  chip.appendChild(nameEl);
+  const removeBtn = document.createElement('button');
+  removeBtn.textContent = '✕';
+  removeBtn.addEventListener('click', clearAttachment);
+  chip.appendChild(removeBtn);
+  attachmentRow.appendChild(chip);
+}
+
+fileInput.addEventListener('change', async () => {
+  const file = fileInput.files[0];
+  if (!file || !token) return;
+  renderAttachmentChip(file.name, 'uploading');
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(API_BASE + '/api/v1/upload/document', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Upload failed');
+    pendingAttachment = data;
+    renderAttachmentChip(data.filename + (data.truncated ? ' (truncated)' : ''), 'ready');
+    toast('File attached: ' + data.filename);
+  } catch (err) {
+    clearAttachment();
+    toast('Could not attach file: ' + err.message);
+  }
+});
+
+// ---------------- Voice input ----------------
+const micBtn = document.getElementById('micBtn');
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognitionAPI) {
+  recognition = new SpeechRecognitionAPI();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  recognition.onresult = (event) => {
+    let transcript = '';
+    for (let i = 0; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    msgInput.value = transcript;
+    msgInput.style.height = 'auto';
+    msgInput.style.height = Math.min(msgInput.scrollHeight, 140) + 'px';
+  };
+  recognition.onend = () => {
+    listening = false;
+    micBtn.classList.remove('listening');
+  };
+  recognition.onerror = () => {
+    listening = false;
+    micBtn.classList.remove('listening');
+    toast('Voice input error — check microphone permissions');
+  };
+} else {
+  micBtn.style.opacity = '0.35';
+  micBtn.title = 'Voice input not supported in this browser';
+}
+
+micBtn.addEventListener('click', () => {
+  if (!recognition) { toast('Voice input not supported in this browser'); return; }
+  if (listening) {
+    recognition.stop();
+    listening = false;
+    micBtn.classList.remove('listening');
+  } else {
+    try {
+      recognition.start();
+      listening = true;
+      micBtn.classList.add('listening');
+    } catch (e) { /* already started */ }
+  }
+});
+
+// ---------------- Share ----------------
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  const bubbles = Array.from(thread.querySelectorAll('.bubble-row'));
+  if (!bubbles.length) { toast('Nothing to share yet'); return; }
+
+  if (currentConversationId) {
+    const shareUrl = window.location.origin + window.location.pathname + '?c=' + encodeURIComponent(currentConversationId);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Nexus conversation', text: convTitle.textContent, url: shareUrl });
+        return;
+      }
+      await navigator.clipboard.writeText(shareUrl);
+      toast('Share link copied to clipboard');
+      return;
+    } catch (e) { /* fall through to transcript copy */ }
+  }
+
+  const transcript = bubbles.map(row => {
+    const role = row.classList.contains('user') ? 'You' : 'Nexus';
+    const text = row.querySelector('.bubble') ? row.querySelector('.bubble').textContent : '';
+    return role + ': ' + text;
+  }).join('\n\n');
+  try {
+    await navigator.clipboard.writeText(transcript);
+    toast('Conversation copied to clipboard');
+  } catch (e) {
+    toast('Could not copy conversation');
+  }
+});
+
+// ---------------- Send message (streaming) ----------------
+async function sendMessage() {
+  const text = msgInput.value.trim();
+  if ((!text && !pendingAttachment) || !token) return;
+
+  let outgoing = text;
+  if (pendingAttachment) {
+    outgoing = '[Attached file: ' + pendingAttachment.filename + ']\n```\n' + pendingAttachment.content + '\n```\n\n' + text;
+  }
+
+  msgInput.value = '';
+  msgInput.style.height = 'auto';
+  sendBtn.disabled = true;
+  addBubble('user', text || ('[file: ' + pendingAttachment.filename + ']'), null);
+  clearAttachment();
+  showThinking();
+  setStatus('busy', 'connecting');
+
+  const isNewConv = !currentConversationId;
+  let streamEl = null;
+  let streamedText = '';
+
+  try {
+    const res = await fetch(API_BASE + '/api/v1/chat/stream', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        message: outgoing,
+        model: currentModel || null,
+        conversation_id: currentConversationId
+      })
+    });
+    if (res.status === 401) { forceLogout(); return; }
+    if (!res.ok || !res.body) {
+      let detail = 'Chat request failed';
+      try { detail = (await res.json()).detail || detail; } catch (e) {}
+      throw new Error(detail);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finalModel = null;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // last (possibly incomplete) line stays in buffer
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        let event;
+        try { event = JSON.parse(line); } catch (e) { continue; }
+
+        if (event.type === 'start') {
+          removeThinking();
+          streamEl = startStreamingBubble();
+          currentConversationId = event.conversation_id;
+          setStatus('busy', event.model);
+        } else if (event.type === 'delta') {
+          if (!streamEl) { removeThinking(); streamEl = startStreamingBubble(); }
+          streamedText += event.text;
+          streamEl.bubble.textContent = streamedText;
+          thread.scrollTop = thread.scrollHeight;
+        } else if (event.type === 'error') {
+          throw new Error(event.detail || 'Stream error');
+        } else if (event.type === 'done') {
+          finalModel = event.model;
+          currentConversationId = event.conversation_id;
+        }
+      }
+    }
+
+    removeThinking();
+    if (streamEl) {
+      streamEl.metaEl.textContent = finalModel || 'done';
+    } else if (streamedText === '') {
+      addBubble('assistant', '(no response)', finalModel || 'offline');
+    }
+    if (isNewConv) convTitle.textContent = resolveTitle(currentConversationId, text.slice(0, 40));
+    setStatus('ready', 'ready \u00b7 ' + (finalModel || 'done'));
+    await loadConversations();
+  } catch (err) {
+    removeThinking();
+    if (streamEl) {
+      streamEl.bubble.textContent = streamedText || ('Error: ' + err.message);
+      streamEl.metaEl.textContent = 'offline';
+    } else {
+      addBubble('assistant', 'Error: ' + err.message, 'offline');
+    }
+    setStatus('error', 'request failed');
+  } finally {
+    sendBtn.disabled = false;
+    msgInput.focus();
+  }
+}
+
+sendBtn.addEventListener('click', sendMessage);
+msgInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+msgInput.addEventListener('input', () => {
+  msgInput.style.height = 'auto';
+  msgInput.style.height = Math.min(msgInput.scrollHeight, 140) + 'px';
+});
+
+// ---------------- Boot ----------------
+if (token) {
+  renderProfile();
+  enterApp(false).catch(() => forceLogout());
+} else {
+  authShell.style.display = 'flex';
+}
+</script>
+</body>
+</html>
