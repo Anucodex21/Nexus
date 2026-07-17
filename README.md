@@ -1,153 +1,213 @@
-# AI-Master (Nexus)
+<div align="center">
 
-[![CI](https://github.com/<your-username>/<repo-name>/actions/workflows/ci.yml/badge.svg)](https://github.com/<your-username>/<repo-name>/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1b26,50:7dcfff,100:bb9af7&height=200&section=header&text=AI-MASTER%20(NEXUS)&fontSize=48&fontColor=c0caf5&animation=fadeIn&fontAlignY=35&desc=A%20Full-Stack%20AI%2FML%20Framework%20Built%20From%20Scratch&descAlignY=55&descSize=18" width="100%"/>
 
-A comprehensive AI/ML framework implementing neural networks, transformers, LLMs, RAG, agents, and multimodal capabilities from scratch - plus a full-stack web app (FastAPI + vanilla HTML/JS "Nexus" UI) that ties them together.
+<a href="https://github.com/Anucodex21/ai-master-nexus">
+  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=20&duration=2800&pause=1200&color=7DCFFF&center=true&vCenter=true&width=650&lines=Neural+Networks+%E2%80%A2+Transformers+%E2%80%A2+GPT+from+scratch;RAG+Pipelines+%E2%80%A2+Multi-Agent+Systems;Speech+%2B+Vision+%2B+FastAPI+Backend;Built+by+%40Anucodex21" alt="Typing SVG" />
+</a>
 
-> Replace `<your-username>/<repo-name>` in the badge URL above with your actual GitHub path once pushed.
+<br/>
 
-## Contents
+![Python](https://img.shields.io/badge/Python-3.9%2B-7dcfff?style=for-the-badge&logo=python&logoColor=1a1b26&labelColor=24283b)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-bb9af7?style=for-the-badge&logo=fastapi&logoColor=1a1b26&labelColor=24283b)
+![License](https://img.shields.io/badge/License-MIT-9ece6a?style=for-the-badge&labelColor=24283b)
+![Status](https://img.shields.io/badge/Status-Alpha-f7768e?style=for-the-badge&labelColor=24283b)
 
-- [Features](#features)
-- [Quickstart](#quickstart)
-- [Installation](#installation)
-- [Running the web app](#running-the-web-app)
-- [Docker](#docker)
-- [Testing](#testing)
-- [API endpoints](#api-endpoints-prefixed-apiv1)
-- [Library usage](#library-usage-outside-the-web-app)
-- [Security notes](#security-notes-before-deploying-anywhere-public)
-- [License](#license)
+</div>
 
-## Quickstart
+---
 
-```bash
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
-cp .env.example .env        # add at least one provider key, e.g. GROQ_API_KEY
-pip install -r requirements-web.txt
-python -m app.backend.main
-```
-Open **http://localhost:8000/ui/index.html** and start chatting. See [Docker](#docker) for a one-command alternative.
+## 📡 Overview
 
-## Features
+**AI-Master (Nexus)** is a full-stack AI/ML framework implementing core building blocks — neural networks, transformers, LLM pipelines, RAG, multi-agent systems, speech, and vision — largely **from scratch in Python**, wired up behind a FastAPI backend with a lightweight web frontend.
 
-- **Neural Networks**: Perceptron, Backpropagation, CNN, RNN, LSTM
-- **Transformers**: Full transformer architecture, GPT implementation
-- **LLM**: Training, inference, fine-tuning, evaluation pipelines, and a real multi-provider `LLMClient` (Groq/Gemini/OpenRouter/HuggingFace/Claude/OpenAI/local model, with automatic fallback)
-- **LangChain**: Chatbots, PDF Q&A, SQL agents, RAG pipelines
-- **Agents**: a working ReAct coding agent (read/write files, list dirs, run Python, sandboxed workspace, persistent per-session memory). `agents/planner.py`, `executor.py`, `crewai.py`, `autogen.py`, `browser_agent.py` are standalone modules not currently wired into the web app.
-- **RAG**: per-user document upload + chunking + embedding + Chroma retrieval, answered through the same multi-provider LLMClient as chat
-- **Speech**: Whisper transcription, Coqui TTS synthesis
-- **Image**: Stable Diffusion generation, BLIP captioning
-- **Full-Stack App**: FastAPI backend + a themed HTML/JS frontend (Chat, Coding Agent, and a Studio page for RAG/Speech/Image), plus an alternative Streamlit chat UI (`interface.py`)
+It's built as a learning-by-building project: instead of only calling library APIs, the core architectures (perceptrons, RNNs, LSTMs, attention, GPT blocks) are implemented directly, alongside integration layers for real providers (Groq, Gemini, OpenRouter, Hugging Face, Anthropic, OpenAI, NVIDIA NIM) where using a hosted model makes more sense than a from-scratch one.
 
-## Installation
+> ⚠️ **Alpha status.** APIs and module layout may change.
 
-```bash
-# Full install (everything above, incl. torch/whisper/diffusers/chroma):
-pip install -r requirements.txt
+---
 
-# OR a lightweight install if you only want the chat/auth web app:
-pip install -r requirements-web.txt
+## ✨ Features
 
-cp .env.example .env
-# Edit .env with your API keys (only ONE cloud provider key is required
-# for /chat to give real responses - see comments in .env.example)
-```
-
-## Running the web app
-
-```bash
-python -m app.backend.main
-# or: uvicorn app.backend.api:app --reload
-```
-
-Then open **http://localhost:8000/ui/index.html** (Chat), **/ui/agent.html** (Coding Agent), or **/ui/studio.html** (RAG / Speech / Image). All three share the same login.
-
-### Alternative UI: Streamlit
-
-`interface.py` is a second, simpler chat frontend built with Streamlit instead of the HTML/JS "Nexus" UI - same backend, same `/api/v1` endpoints, just a different client. Handy if you want a quick local UI without touching the frontend files.
-
-```bash
-# backend must already be running (see above)
-streamlit run interface.py
-```
-
-### Docker
-
-```bash
-cp .env.example .env   # add at least one provider key first
-docker compose up --build
-```
-
-Serves the same app at **http://localhost:8000**, using `requirements-web.txt` by default (chat/auth/RAG-query work; RAG document embedding, speech, and image endpoints return 503 until you build with the full extras). The sqlite DB, Chroma store, and agent workspace persist across restarts via a named volume. To build with everything (torch/whisper/diffusers/chromadb included):
-
-```bash
-INSTALL_FULL=1 docker compose up --build
-```
-
-Without Docker, the same image can be built/run directly:
-```bash
-docker build -t nexus .
-docker run -p 8000:8000 --env-file .env nexus
-```
-
-## Testing
-
-```bash
-pip install -r requirements-web.txt -r requirements-dev.txt
-pytest
-```
-
-Covers auth (register/login/token enforcement), chat + streaming + conversation persistence (against the deterministic offline fallback, so no real API calls or keys are needed), RAG chunking logic, and the coding agent's sandbox (path-traversal blocking, file read/write, Python execution). Tests that need heavier deps (embeddings, speech, image, local-model inference) aren't included here since they'd require the full `requirements.txt` install and real model downloads - exercise those manually through the Studio UI instead.
-
-CI (`.github/workflows/ci.yml`) runs this same suite on every push/PR against Python 3.11 and 3.12.
-
-### API endpoints (prefixed `/api/v1`)
-
-| Area | Endpoints |
+| Module | What's inside |
 |---|---|
-| Auth | `POST /auth/register`, `POST /auth/login` |
-| Chat | `POST /chat`, `POST /chat/stream` (NDJSON), `GET /models`, `GET /conversations`, `GET /conversations/{id}` |
-| Files | `POST /upload/document` |
-| Image | `POST /generate/image`, `POST /image/caption` |
-| Speech | `POST /speech/transcribe`, `POST /speech/speak` |
-| RAG | `POST /rag/upload`, `POST /rag/query`, `GET /rag/stats` |
-| Agent | `GET /agent/status`, `POST /agent/run` (NDJSON, unauthenticated by design - see comment in `routes.py`), `GET /agent/memory/{session_id}` |
+| 🧠 `neural_network/` | Perceptron, backprop, CNN, RNN, LSTM — implemented from first principles |
+| 🔤 `transformers/` | Tokenizer, embeddings, attention, encoder/decoder, full `Transformer`, and a from-scratch `GPT` with `.generate()` |
+| 🤖 `llm/` | Training, fine-tuning, inference, dataset/dataloader, and evaluation pipelines |
+| 🔗 `langchain/` | `ChatBot`, PDF Q&A, SQL agent, prompt templates, memory, tool-calling |
+| 🕵️ `agents/` | Task planner, executor, memory, CrewAI/AutoGen integration, browser automation, coding agent |
+| 📚 `rag/` | `RAGPipeline` with pluggable retrievers — Chroma, FAISS, Pinecone |
+| 🎙️ `speech/` | `VoiceAssistant` — Whisper transcription + TTS in one loop |
+| 🖼️ `image/` | `ImageGenerator` — Stable Diffusion backend, BLIP captioning, batch generation |
+| 🌐 `app/` | FastAPI backend (auth, chat, streaming, RAG, agents) + HTML frontend |
 
-Speech/image/RAG endpoints lazy-load their models on first request, so a `requirements-web.txt`-only install still boots - those specific endpoints will just return a 503 until the full `requirements.txt` extras are installed.
+---
 
-## Library usage (outside the web app)
+## 🗂️ Project Structure
 
-### Neural Network
+```
+AI-Master (Nexus)/
+├── neural_network/     # Perceptron, CNN, RNN, LSTM, backprop, optimizers
+├── transformers/        # Attention, encoder/decoder, full Transformer, GPT
+├── llm/                 # train / finetune / inference / evaluate pipelines
+├── langchain/            # ChatBot, PDF Q&A, SQL agent, RAG, tools, memory
+├── agents/              # Planner, executor, CrewAI, AutoGen, browser agent
+├── rag/                 # Retriever + Chroma / FAISS / Pinecone pipelines
+├── speech/               # Whisper + TTS voice assistant
+├── image/                # Stable Diffusion, BLIP, captioning, batch gen
+├── app/
+│   ├── backend/         # FastAPI: auth, chat, streaming, RAG, agents
+│   └── frontend/        # HTML/JS interface
+├── interface.py          # CLI entry point
+├── setup.py
+└── requirements.txt
+```
+
+---
+
+## 🚀 Installation
+
+```bash
+git clone https://github.com/Anucodex21/ai-master-nexus.git
+cd ai-master-nexus
+
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS/Linux
+
+pip install -r requirements.txt
+```
+
+### Configuration
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and add **at least one** AI provider key (Groq and Gemini both have generous free tiers) so `/chat` returns real model responses instead of an offline fallback message. Provider priority is `groq → gemini → openrouter → huggingface → claude → openai`, overridable via `LLM_PROVIDER_ORDER`.
+
+> 🔒 **Never commit your real `.env`** — only `.env.example` (with placeholder values) belongs in git. `.env` is already in `.gitignore`.
+
+---
+
+## ⚡ Quick Start
+
+### Neural Network (from scratch)
 ```python
 from neural_network import Perceptron
-model = Perceptron(input_size=2)
-model.train(X, y, epochs=100)
+
+model = Perceptron(input_size=2, learning_rate=0.01, epochs=100)
+model.train(X, y)
+predictions = model.predict(X)
 ```
 
 ### Transformer
 ```python
 from transformers import Transformer
+
 model = Transformer(vocab_size=10000, d_model=512, num_heads=8)
-output = model(src, tgt)
+output = model.forward(src, tgt)
 ```
 
-### LLM Inference
+### GPT (from scratch)
 ```python
-from llm import LLMInference
+from transformers.gpt import GPT
+
+model = GPT(vocab_size=10000, d_model=768, num_heads=12, num_layers=12)
+tokens = model.generate(input_ids, max_new_tokens=50, temperature=1.0)
+```
+
+### LLM Inference (hosted providers)
+```python
+from llm.inference import LLMInference
+
 llm = LLMInference(model_path="path/to/model")
 response = llm.generate("Hello, how are you?")
 ```
 
-## Security notes before deploying anywhere public
+### RAG Pipeline
+```python
+from rag.pipeline import RAGPipeline
+from rag.retriever import Retriever
 
-- **Set a real `SECRET_KEY`** in `.env` (`python -c "import secrets; print(secrets.token_hex(32))"`). If it's unset or left as the `.env.example` placeholder, `auth.py` now generates a random key per process instead of using an insecure hardcoded default - safer, but it also means every restart invalidates all existing login sessions until you set a real one.
-- **`POST /api/v1/agent/run` is intentionally unauthenticated** (see the comment in `routes.py`) - it runs arbitrary Python inside `agent_workspace/`. Fine for local/dev use; add `Depends(AuthManager.verify_token)` before exposing it on a network anyone else can reach.
-- CORS defaults to allow-all (`CORS_ORIGINS` unset) for zero-friction local dev. Set `CORS_ORIGINS` (comma-separated) in `.env` before deploying publicly, e.g. `CORS_ORIGINS=https://your-domain.com`.
+retriever = Retriever(...)
+rag = RAGPipeline(retriever=retriever)
+answer = rag.run("What does this document say about X?", top_k=5)
+```
 
-## License
+### LangChain Chatbot
+```python
+from langchain.chatbot import ChatBot
 
-MIT License - see [LICENSE](LICENSE).
+bot = ChatBot(model_name="gpt-3.5-turbo", temperature=0.7)
+reply = bot.chat("Summarize this in one sentence.")
+```
+
+### Voice Assistant
+```python
+from speech.voice_assistant import VoiceAssistant
+
+assistant = VoiceAssistant()
+assistant.run_interaction(duration=5)
+```
+
+### Image Generation
+```python
+from image.image_generation import ImageGenerator
+
+gen = ImageGenerator(backend="stable_diffusion")
+image = gen.generate("a cyberpunk city at night")
+```
+
+---
+
+## 🌐 Running the Full-Stack App
+
+```bash
+python -m app.backend.main
+```
+
+FastAPI serves on `http://localhost:8000`.
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/health` | GET | Health check |
+| `/auth/register`, `/auth/login` | POST | User auth (JWT) |
+| `/chat` | POST | Single-turn chat |
+| `/chat/stream` | POST | Streamed chat response |
+| `/models` | GET | List available providers/models |
+| `/conversations` | GET | List conversations |
+| `/conversations/{id}` | GET | Fetch a conversation |
+| `/upload/document` | POST | Upload a doc for RAG |
+| `/rag/query` | POST | Query the RAG pipeline |
+| `/generate/image` | POST | Image generation |
+| `/agent/status`, `/agent/run` | GET / POST | Agent system control |
+
+---
+
+## 🛠️ Tech Stack
+
+![PyTorch](https://img.shields.io/badge/PyTorch-24283b?style=flat-square&logo=pytorch&logoColor=7dcfff)
+![FastAPI](https://img.shields.io/badge/FastAPI-24283b?style=flat-square&logo=fastapi&logoColor=bb9af7)
+![LangChain](https://img.shields.io/badge/LangChain-24283b?style=flat-square&logoColor=7dcfff)
+![Whisper](https://img.shields.io/badge/Whisper-24283b?style=flat-square&logo=openai&logoColor=bb9af7)
+
+---
+
+## 🤝 Contributing
+
+Issues and PRs are welcome — this is an actively evolving learning project. Fork it, open an issue, or send a PR.
+
+## 📄 License
+
+MIT License — see [`LICENSE`](LICENSE).
+
+---
+
+<div align="center">
+
+**Built by [@Anucodex21](https://github.com/Anucodex21)**
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1b26,50:7dcfff,100:bb9af7&height=100&section=footer" width="100%"/>
+
+</div>
