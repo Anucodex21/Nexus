@@ -19,7 +19,7 @@ langchain-openai>=0.0.5
 # RAG & Vector Stores
 chromadb>=0.4.0
 faiss-cpu>=1.7.4
-pinecone-client>=2.2.0
+pinecone>=5.0.0
 sentence-transformers>=2.2.0
 
 # Speech
