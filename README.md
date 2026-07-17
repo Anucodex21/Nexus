@@ -19,7 +19,7 @@
 
 ## 📡 Overview
 
-**AI-Master (Nexus)** is a full-stack AI/ML framework implementing core building blocks — neural networks, transformers, LLM pipelines, RAG, multi-agent systems, speech, and vision — largely **from scratch in Python**, wired up behind a FastAPI backend with a lightweight web frontend.
+**Nexus** is a full-stack AI/ML framework implementing core building blocks — neural networks, transformers, LLM pipelines, RAG, multi-agent systems, speech, and vision — largely **from scratch in Python**, wired up behind a FastAPI backend with a lightweight web frontend.
 
 It's built as a learning-by-building project: instead of only calling library APIs, the core architectures (perceptrons, RNNs, LSTMs, attention, GPT blocks) are implemented directly, alongside integration layers for real providers (Groq, Gemini, OpenRouter, Hugging Face, Anthropic, OpenAI, NVIDIA NIM) where using a hosted model makes more sense than a from-scratch one.
 
