@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1b26,50:7dcfff,100:bb9af7&height=200&section=header&text=AI-MASTER%20(NEXUS)&fontSize=48&fontColor=c0caf5&animation=fadeIn&fontAlignY=35&desc=A%20Full-Stack%20AI%2FML%20Framework%20Built%20From%20Scratch&descAlignY=55&descSize=18" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1b26,50:7dcfff,100:bb9af7&height=200&section=header&text=NEXUS&fontSize=48&fontColor=c0caf5&animation=fadeIn&fontAlignY=35&desc=A%20Full-Stack%20AI%2FML%20Framework%20Built%20From%20Scratch&descAlignY=55&descSize=18" width="100%"/>
 
 <a href="https://github.com/Anucodex21/ai-master-nexus">
   <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=20&duration=2800&pause=1200&color=7DCFFF&center=true&vCenter=true&width=650&lines=Neural+Networks+%E2%80%A2+Transformers+%E2%80%A2+GPT+from+scratch;RAG+Pipelines+%E2%80%A2+Multi-Agent+Systems;Speech+%2B+Vision+%2B+FastAPI+Backend;Built+by+%40Anucodex21" alt="Typing SVG" />
